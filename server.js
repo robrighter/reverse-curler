@@ -60,6 +60,7 @@ io.on('connection', function(client){
 
 /////// ADD ALL YOUR ROUTES HERE  /////////
 
+//homepage
 server.get('/', function(req,res){
   res.render('index.ejs', {
     locals : { 
@@ -72,6 +73,64 @@ server.get('/', function(req,res){
             }
   });
 });
+
+//channels
+var datastore = {};
+
+server.get("/:channel/console", function (req, res) {
+  //render out the console template and nothing else. The Channel is created and handled on the web socket event
+  res.render('console.ejs', {
+    locals : { 
+      header: '',
+      footer: '',
+      title : (req.params.channel +' Console'),
+      description: '',
+      author: 'Rob Righter',
+      channelname: req.params.channel,
+      analyticssiteid: 'XXXXXXX' 
+    }
+  });
+  
+});
+
+server.get("/:channel", function (req, res, match) {
+  //render reply with whatever they asked us to.
+  sendResponseText(req.params.channel,res);
+});
+
+function makeChannelIfNotExist(thechannelname, client){
+  var toreturn;
+  if(datastore.hasOwnProperty(thechannelname)){
+    //the channel already exists
+    datastore[thechannelname].clients.push(client);
+  }
+  else{
+    //the channel does not exist
+    datastore[thechannelname] = {
+      clients : [client],
+      responseText : ''
+    };
+  }
+  return datastore[thechannelname];
+}
+
+function updateResponseText(thechannelname, responsetext){
+  if(datastore.hasOwnProperty(thechannelname)){
+    //the channel exists
+    datastore[thechannelname].responseText = responsetext;
+  }
+}
+
+function sendResponseText(thechannelname,res){
+  if(datastore.hasOwnProperty(thechannelname)){
+    //the channel exists
+    res.send(datastore[thechannelname].responseText);
+  }
+  else{
+    //the channel does not exist so just send out an error
+    res.send('{"error" : "Sorry, this channel does not exist"}');
+  }
+}
 
 
 //A Route for Creating a 500 Error (Useful to keep around)
