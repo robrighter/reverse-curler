@@ -223,6 +223,11 @@ h2 {
   color: #78B0FF;
 }
 
+h5 {
+  color: #78B0FF;
+  margin-top: 10px;
+}
+
 #main {
   width: 950px;
   margin-left: auto;
@@ -308,6 +313,19 @@ code {
 
 .break {
   clear: both;
+}
+
+#console .key {
+  color: #8C6DFF;
+}
+
+hr {
+  color:none;
+  border:none;
+  border-top:1px #290943 solid;
+  height:1px;
+  overflow:hidden;
+  line-height:1px;
 }
 
 

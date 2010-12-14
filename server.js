@@ -144,6 +144,12 @@ server.get("/:channel", function (req, res, match) {
   sendResponseText(req.params.channel,res);
 });
 
+server.post("/:channel", function (req, res, match) {
+  //render reply with whatever they asked us to.
+  sendConsoleUpdateToClients(req.params.channel, formatConsoleEntry(req));
+  sendResponseText(req.params.channel,res);
+});
+
 
 function getResponseText(thechannelname){
   return (datastore.hasOwnProperty(thechannelname) ? datastore[thechannelname].responseText : '');
@@ -173,12 +179,20 @@ function sendConsoleUpdateToClients(channel, consolestring){
 }
 
 function formatConsoleEntry(req){
-  var toreturn = '<h5>Headers</h5>';
+
+  var toreturn = '<h5>'+req.method+' '+req.url+'</h5>';
+  if(req.method == 'POST'){
+    toreturn += '<h5>Post Body:</h5>';
+    toreturn += ('<p>'+req.rawBody+'</p>');
+  }
+  toreturn += '<h5>Headers:</h5>';
   objectMap(req.headers, function(key, value){
     toreturn += ("<span class='key'>"+key+":</span> " + " <span class='value'>"+value+"</span><br>");
   });
   
-  console.log(req.headers);
+  toreturn += '<hr>';
+  
+  console.log(req);
   return toreturn;
   
 }
