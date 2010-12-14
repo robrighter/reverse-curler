@@ -252,6 +252,10 @@ h2 {
   font-family: 'Courier New','Droid Sans Mono', arial, serif;
 }
 
+#console {
+  overflow-y: scroll;
+}
+
 #response form button, #homesearch form button {
   float: right;
   background-color: #75AA3E;

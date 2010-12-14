@@ -45,13 +45,57 @@ var io = io.listen(server);
 io.on('connection', function(client){
 	console.log('Client Connected');
 	client.on('message', function(message){
-		client.broadcast(message);
-		client.send(message);
-	});
-	client.on('disconnect', function(){
-		console.log('Client Disconnected.');
+		
+		message = JSON.parse(message);
+		console.log(sys.inspect(message));
+		switch(message.cmd){
+		  case 'connect':
+		    //do something
+		    connectChannel(message.channel, client);
+		    break;
+		  case 'saveresponse':
+		    updateResponseText(message.channel, message.responsetext)
+		    break;
+		  default:
+		    //do something
+		}
+		
+		
+		//client.broadcast(message);
+		//client.send(message);
 	});
 });
+
+function connectChannel(thechannelname, client){
+  if(datastore.hasOwnProperty(thechannelname)){
+    //the channel already exists
+    console.log('Connected to Existing Channel: ' + thechannelname);
+    console.log('ResponseText for this channel is: ' + datastore[thechannelname].responseText);
+    datastore[thechannelname].clients.push(client);
+  }
+  else{
+    //the channel does not exist
+    console.log('Creating New Channel: ' + thechannelname);
+    datastore[thechannelname] = {
+      clients : [client],
+      responseText : ''
+    };
+  }
+  //set the callback to remove the client whenever it disconnects
+  client.on('disconnect', function(){
+		console.log('Client Disconnected from channel: ' + thechannelname);
+		var toremove = datastore[thechannelname].clients.indexOf(client);
+		console.log('going to delete item at index ' + toremove);
+		datastore[thechannelname].clients.splice(toremove,1);
+	});
+  return datastore[thechannelname];  
+}
+
+function updateResponseText(thechannelname, responsetext){
+  if(datastore.hasOwnProperty(thechannelname)){
+    datastore[thechannelname].responseText = responsetext;
+  }
+}
 
 
 ///////////////////////////////////////////
@@ -87,6 +131,7 @@ server.get("/:channel/console", function (req, res) {
       description: '',
       author: 'Rob Righter',
       channelname: req.params.channel,
+      responsetext: getResponseText(req.params.channel),
       analyticssiteid: 'XXXXXXX' 
     }
   });
@@ -95,30 +140,13 @@ server.get("/:channel/console", function (req, res) {
 
 server.get("/:channel", function (req, res, match) {
   //render reply with whatever they asked us to.
+  sendConsoleUpdateToClients(req.params.channel, formatConsoleEntry(req));
   sendResponseText(req.params.channel,res);
 });
 
-function makeChannelIfNotExist(thechannelname, client){
-  var toreturn;
-  if(datastore.hasOwnProperty(thechannelname)){
-    //the channel already exists
-    datastore[thechannelname].clients.push(client);
-  }
-  else{
-    //the channel does not exist
-    datastore[thechannelname] = {
-      clients : [client],
-      responseText : ''
-    };
-  }
-  return datastore[thechannelname];
-}
 
-function updateResponseText(thechannelname, responsetext){
-  if(datastore.hasOwnProperty(thechannelname)){
-    //the channel exists
-    datastore[thechannelname].responseText = responsetext;
-  }
+function getResponseText(thechannelname){
+  return (datastore.hasOwnProperty(thechannelname) ? datastore[thechannelname].responseText : '');
 }
 
 function sendResponseText(thechannelname,res){
@@ -132,6 +160,28 @@ function sendResponseText(thechannelname,res){
   }
 }
 
+function sendConsoleUpdateToClients(channel, consolestring){
+  var message = {
+    cmd: 'consoleupdate',
+    value: consolestring
+  }
+  if(datastore.hasOwnProperty(channel)){
+    datastore[channel].clients.forEach(function(client){
+      client.send(JSON.stringify(message));
+    });
+  }
+}
+
+function formatConsoleEntry(req){
+  var toreturn = '<h5>Headers</h5>';
+  objectMap(req.headers, function(key, value){
+    toreturn += ("<span class='key'>"+key+":</span> " + " <span class='value'>"+value+"</span><br>");
+  });
+  
+  console.log(req.headers);
+  return toreturn;
+  
+}
 
 //A Route for Creating a 500 Error (Useful to keep around)
 server.get('/500', function(req, res){
@@ -149,5 +199,12 @@ function NotFound(msg){
     Error.captureStackTrace(this, arguments.callee);
 }
 
+function objectMap(obj, callback){
+  var toreturn = [];
+  for(key in obj){
+    toreturn.push(callback(key, obj[key]));
+  }
+  return toreturn;
+}
 
 console.log('Listening on http://0.0.0.0:' + port );
