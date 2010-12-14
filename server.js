@@ -19,8 +19,8 @@ server.configure(function(){
 server.error(function(err, req, res, next){
     if (err instanceof NotFound) {
         res.render('404.ejs', { locals: { 
-                  header: '#Header#'
-                 ,footer: '#Footer#'
+                  header: ''
+                 ,footer: ''
                  ,title : '404 - Not Found'
                  ,description: ''
                  ,author: ''
@@ -28,8 +28,8 @@ server.error(function(err, req, res, next){
                 },status: 404 });
     } else {
         res.render('500.ejs', { locals: { 
-                  header: '#Header#'
-                 ,footer: '#Footer#'
+                  header: ''
+                 ,footer: ''
                  ,title : 'The Server Encountered an Error'
                  ,description: ''
                  ,author: ''
@@ -64,11 +64,11 @@ io.on('connection', function(client){
 server.get('/', function(req,res){
   res.render('index.ejs', {
     locals : { 
-              header: '#Header#'
-             ,footer: '#Footer#'
-             ,title : 'Page Title'
-             ,description: 'Page Description'
-             ,author: 'Your Name'
+              header: ''
+             ,footer: ''
+             ,title : 'HTTP Request Inspector'
+             ,description: 'A website for inspecting HTTP GETS and POSTS'
+             ,author: 'Rob Righter'
              ,analyticssiteid: 'XXXXXXX' 
             }
   });

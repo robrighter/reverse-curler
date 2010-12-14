@@ -18,6 +18,11 @@ $(document).ready(function() {
    socket.on('message', function(data){
      $('#reciever').append('<li>' + data + '</li>');  
    });
+   
+   $('#homesearch form').submit(function(){
+     window.location = '/' + $('#channelselector').val() + "/console";
+     return false;
+   });
       
  });
 
