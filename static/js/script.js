@@ -4,7 +4,7 @@
 var socket;
 io.setPath('/client/');
 socket = new io.Socket(null, { 
-  port: 8081
+  port: 80
   ,transports: ['websocket', 'htmlfile', 'xhr-multipart', 'xhr-polling']
 });
 socket.connect();
