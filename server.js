@@ -181,7 +181,7 @@ function sendConsoleUpdateToClients(channel, consolestring){
 function formatConsoleEntry(req){
 
   var toreturn = '<h5>'+req.method+' '+req.url+'</h5>';
-  if(req.method == 'POST'){
+  if(req.hasOwnProperty('rawBody')){
     toreturn += '<h5>Post Body:</h5>';
     toreturn += ('<p>'+req.rawBody+'</p>');
   }
