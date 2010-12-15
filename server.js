@@ -192,7 +192,6 @@ function formatConsoleEntry(req){
   
   toreturn += '<hr>';
   
-  console.log(req);
   return toreturn;
   
 }
